@@ -281,6 +281,10 @@ namespace QMangaAPI.Migrations
                     b.Property<Guid>("RoleId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("UpdatedIn")
                         .HasColumnType("TEXT");
 

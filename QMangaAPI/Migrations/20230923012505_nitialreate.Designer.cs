@@ -11,8 +11,8 @@ using QMangaAPI.Data.Context;
 namespace QMangaAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230921181526_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20230923012505_nitialreate")]
+    partial class nitialreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -282,6 +282,10 @@ namespace QMangaAPI.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("RoleId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("UpdatedIn")

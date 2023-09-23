@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using QMangaAPI.Data.Enums;
 using QMangaAPI.Data.Interfaces.Models;
 
 namespace QMangaAPI.Models;

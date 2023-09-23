@@ -1,26 +1,66 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using QMangaAPI.Data;
 using QMangaAPI.Data.Context;
+using QMangaAPI.Data.Interfaces.Repositories;
+using QMangaAPI.Data.Interfaces.Services;
+using QMangaAPI.Repositories;
+using QMangaAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers(options =>
+  options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+
+builder.Services.AddScoped<IJwtGenerator, JwtGenerator>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IUserValidator, UserValidator>();
+
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("QMangaPolicy", policy =>
+  {
+    policy
+      .AllowAnyOrigin()
+      .AllowAnyMethod()
+      .AllowAnyMethod();
+  });
+});
 
 builder.Services.AddDbContext<AppDbContext>(option =>
 {
   option.UseSqlite(builder.Configuration.GetConnectionString("SqliteConnection"));
 });
 
+builder.Services.AddAuthentication(e =>
+{
+  e.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+  e.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(e =>
+{
+  e.RequireHttpsMetadata = false;
+  e.SaveToken = true;
+  e.TokenValidationParameters = new TokenValidationParameters
+  {
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = new SymmetricSecurityKey("qmangaveryverysecret"u8.ToArray()),
+    ValidateAudience = false,
+    ValidateIssuer = false,
+    ClockSkew = TimeSpan.Zero
+  };
+});
+
 var app = builder.Build();
 
 Seed.SeedData(app);
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
   app.UseSwagger();
@@ -28,9 +68,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("QMangaPolicy");
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

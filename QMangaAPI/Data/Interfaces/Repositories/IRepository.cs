@@ -1,4 +1,5 @@
 using QMangaAPI.Data.Interfaces.Models;
+using QMangaAPI.Models;
 
 namespace QMangaAPI.Data.Interfaces.Repositories;
 
@@ -20,32 +21,32 @@ public interface IRepository<T, in TK> where T : IEntity
   /// </summary>
   /// <param name="id">Id сущности.</param>
   /// <returns></returns>
-  Task<T> GetByIdAsync(TK id);
+  Task<T?> GetByIdAsync(TK id);
   
   /// <summary>
   /// Добавить сущность в репоозиторий.
   /// </summary>
   /// <param name="entity">Сущность.</param>
   /// <returns>Результат добавления.</returns>
-  bool Add(T entity);
+  Task<bool> AddAsync(T entity);
   
   /// <summary>
   /// Обновить сущность в репозитории.
   /// </summary>
   /// <param name="entity">Сущность.</param>
   /// <returns>Результат обновления.</returns>
-  bool Update(T entity);
+  Task<bool> UpdateAsync(T entity);
   
   /// <summary>
   /// Удалить сущность из репозитория.
   /// </summary>
   /// <param name="entity">Сущность.</param>
   /// <returns>Результат удаления.</returns>
-  bool Delete(T entity);
+  Task<bool> DeleteAsync(T entity);
   
   /// <summary>
   /// Сохранить все изменения в репозитоории.
   /// </summary>
   /// <returns>Результат сохранения.</returns>
-  bool SaveAll();
+  Task<bool> SaveAllAsync();
 }
