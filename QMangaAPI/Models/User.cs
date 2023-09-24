@@ -7,15 +7,9 @@ public class User : IEntity
 {
   [Key] public Guid Id { get; set; }
   
-  [StringLength(16, MinimumLength = 2)]
   public string Username { get; set; } = string.Empty;
-  
-  [StringLength(64)]
   public string Email { get; set; } = string.Empty;
-  
-  [StringLength(64, MinimumLength = 8)]
   public string Password { get; set; } = string.Empty;
-  
   public string Token { get; set; } = string.Empty;
   
   public Translator? Translator { get; set; }
