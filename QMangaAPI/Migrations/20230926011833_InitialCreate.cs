@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace QMangaAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class nitialreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -90,6 +90,8 @@ namespace QMangaAPI.Migrations
                     Email = table.Column<string>(type: "TEXT", nullable: false),
                     Password = table.Column<string>(type: "TEXT", nullable: false),
                     Token = table.Column<string>(type: "TEXT", nullable: false),
+                    RefreshToken = table.Column<string>(type: "TEXT", nullable: false),
+                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "TEXT", nullable: false),
                     RoleId = table.Column<Guid>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdatedIn = table.Column<DateTime>(type: "TEXT", nullable: false)

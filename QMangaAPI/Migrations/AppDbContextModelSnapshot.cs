@@ -278,6 +278,13 @@ namespace QMangaAPI.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("RoleId")
                         .HasColumnType("TEXT");
 

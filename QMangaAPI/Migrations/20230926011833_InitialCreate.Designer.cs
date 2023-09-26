@@ -11,8 +11,8 @@ using QMangaAPI.Data.Context;
 namespace QMangaAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230923012505_nitialreate")]
-    partial class nitialreate
+    [Migration("20230926011833_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -279,6 +279,13 @@ namespace QMangaAPI.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("RoleId")

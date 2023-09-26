@@ -6,7 +6,7 @@ public interface IUserValidator
 {
   Task<bool> CheckUsernameExistAsync(string username);
   Task<bool> CheckEmailExistAsync(string email);
-  bool CheckEmailAsync(string email);
-  bool CheckPasswordAsync(string password, out string message);
+  bool CheckEmail(string email);
+  bool CheckPassword(string password, out string message);
   
 }
