@@ -285,6 +285,13 @@ namespace QMangaAPI.Migrations
                     b.Property<DateTime>("RefreshTokenExpiryTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("ResetPasswordExpiry")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ResetPasswordToken")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("RoleId")
                         .HasColumnType("TEXT");
 

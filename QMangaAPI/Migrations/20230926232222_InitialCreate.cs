@@ -92,6 +92,8 @@ namespace QMangaAPI.Migrations
                     Token = table.Column<string>(type: "TEXT", nullable: false),
                     RefreshToken = table.Column<string>(type: "TEXT", nullable: false),
                     RefreshTokenExpiryTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    ResetPasswordToken = table.Column<string>(type: "TEXT", nullable: false),
+                    ResetPasswordExpiry = table.Column<DateTime>(type: "TEXT", nullable: false),
                     RoleId = table.Column<Guid>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdatedIn = table.Column<DateTime>(type: "TEXT", nullable: false)

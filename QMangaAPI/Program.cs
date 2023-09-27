@@ -5,6 +5,7 @@ using QMangaAPI.Data;
 using QMangaAPI.Data.Context;
 using QMangaAPI.Data.Interfaces.Repositories;
 using QMangaAPI.Data.Interfaces.Services;
+using QMangaAPI.Helpers;
 using QMangaAPI.Repositories;
 using QMangaAPI.Services;
 
@@ -22,6 +23,9 @@ builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IUserValidator, UserValidator>();
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 builder.Services.AddCors(options =>
 {

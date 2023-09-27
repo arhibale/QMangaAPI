@@ -11,7 +11,7 @@ using QMangaAPI.Data.Context;
 namespace QMangaAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230926011833_InitialCreate")]
+    [Migration("20230926232222_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -286,6 +286,13 @@ namespace QMangaAPI.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ResetPasswordExpiry")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ResetPasswordToken")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("RoleId")
