@@ -2,27 +2,25 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using QMangaAPI.Data;
-using QMangaAPI.Data.Context;
-using QMangaAPI.Data.Interfaces.Repositories;
-using QMangaAPI.Data.Interfaces.Services;
-using QMangaAPI.Helpers;
 using QMangaAPI.Repositories;
+using QMangaAPI.Repositories.Context;
+using QMangaAPI.Repositories.Impl;
 using QMangaAPI.Services;
+using QMangaAPI.Services.Impl;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers(options =>
   options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
 
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
-builder.Services.AddScoped<IUserValidator, UserValidator>();
+builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
+builder.Services.AddScoped<IUserValidatorService, UserValidatorService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
@@ -63,7 +61,7 @@ builder.Services.AddAuthentication(e =>
 
 var app = builder.Build();
 
-Seed.SeedData(app);
+SeedData.Seed(app);
 
 if (app.Environment.IsDevelopment())
 {

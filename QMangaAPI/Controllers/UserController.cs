@@ -1,37 +1,34 @@
 using System.Security.Cryptography;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using QMangaAPI.Data.Enums;
-using QMangaAPI.Data.Interfaces.Repositories;
-using QMangaAPI.Data.Interfaces.Services;
-using QMangaAPI.Helpers;
-using QMangaAPI.Helpers.Dto;
-using QMangaAPI.Models;
+using QMangaAPI.Data;
+using QMangaAPI.Data.Dto;
+using QMangaAPI.Data.Enum;
+using QMangaAPI.Models.Impl;
+using QMangaAPI.Repositories;
+using QMangaAPI.Services;
 
 namespace QMangaAPI.Controllers;
 
-[Route("api/v1/user/")]
+[Route("api/v1/user")]
 [ApiController]
 public class UserController : ControllerBase
 {
-  private readonly IUserRepository userRepository;
-  private readonly IRoleRepository roleRepository;
-
-  private readonly IPasswordHasher passwordHasher;
+  private readonly IRepositoryManager repositoryManager;
+  private readonly IPasswordHasherService passwordHasher;
   private readonly IJwtService jwtService;
-  private readonly IUserValidator userValidator;
+  private readonly IUserValidatorService userValidator;
   private readonly IEmailService emailService;
 
-  public UserController(
-    IUserRepository userRepository,
-    IRoleRepository roleRepository,
-    IPasswordHasher passwordHasher,
+  public UserController
+  (
+    IRepositoryManager repositoryManager,
+    IPasswordHasherService passwordHasher,
     IJwtService jwtService,
-    IUserValidator userValidator,
-    IEmailService emailService)
+    IUserValidatorService userValidator,
+    IEmailService emailService
+  )
   {
-    this.userRepository = userRepository;
-    this.roleRepository = roleRepository;
+    this.repositoryManager = repositoryManager;
     this.passwordHasher = passwordHasher;
     this.jwtService = jwtService;
     this.userValidator = userValidator;
@@ -44,11 +41,12 @@ public class UserController : ControllerBase
     if (user is null)
       return BadRequest(new { Message = "User is null" });
 
-    var byUsername = await userRepository.GetByUsernameAsync(user.Username);
+    var byUsername =
+      await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role,
+        e => string.Equals(e.Username, user.Username), false);
 
     if (byUsername is null)
       return NotFound(new { Message = "User not found" });
-
     if (!passwordHasher.Verify(byUsername.Password, user.Password))
       return BadRequest(new { Message = "Password is incorrect" });
 
@@ -57,7 +55,9 @@ public class UserController : ControllerBase
     var newRefreshToken = await jwtService.CreateRefreshTokenAsync();
     byUsername.RefreshToken = newRefreshToken;
     byUsername.RefreshTokenExpiryTime = DateTime.Now.AddDays(32);
-    await userRepository.UpdateAsync(byUsername);
+
+    repositoryManager.Users.UpdateUser(byUsername);
+    repositoryManager.Save();
 
     return Ok(new TokenApiDto
     {
@@ -83,19 +83,13 @@ public class UserController : ControllerBase
       return BadRequest(new { Message = message });
 
     user.Password = passwordHasher.Hash(user.Password);
-    user.Role = await roleRepository.GetByNameAsync(RoleEnums.User) ?? throw new InvalidOperationException();
-    user.Token = "todo token";
+    user.Role = await repositoryManager.Roles.FirstOrDefaultRolesAsync(e => string.Equals(e.Name, RoleEnum.User.ToString()), true) ??
+                throw new InvalidOperationException();
 
-    await userRepository.AddAsync(user);
+    repositoryManager.Users.CreateUser(user);
+    repositoryManager.Save();
 
     return Ok(new { Message = "User registered" });
-  }
-
-  [HttpGet]
-  [Authorize]
-  public async Task<IActionResult> GetAllUsers()
-  {
-    return Ok(await userRepository.GetAllAsync());
   }
 
   [HttpPost("refresh")]
@@ -109,7 +103,7 @@ public class UserController : ControllerBase
 
     var principal = jwtService.GetPrincipleFromExpiredToken(accessToken);
     var username = principal.Identity?.Name;
-    var user = await userRepository.GetByUsernameAsync(username);
+    var user = await repositoryManager.Users.FirstOrDefaultUserAsync(e => string.Equals(e.Username, username), true);
 
     if (user is null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
       return BadRequest("Invalid request");
@@ -118,7 +112,8 @@ public class UserController : ControllerBase
     var newRefreshToken = await jwtService.CreateRefreshTokenAsync();
     user.RefreshToken = newRefreshToken;
 
-    await userRepository.UpdateAsync(user);
+    repositoryManager.Users.UpdateUser(user);
+    repositoryManager.Save();
 
     return Ok(new TokenApiDto
     {
@@ -131,7 +126,7 @@ public class UserController : ControllerBase
   [HttpPost("send-email-reset-password/{email}")]
   public async Task<IActionResult> SendEmail(string email)
   {
-    var user = await userRepository.GetByEmailAsync(email);
+    var user = await repositoryManager.Users.FirstOrDefaultUserAsync(e => string.Equals(e.Email, email), true);
 
     if (user is null)
       return NotFound(new { Message = "Email doesn't exist" });
@@ -140,17 +135,18 @@ public class UserController : ControllerBase
     var emailToken = Convert.ToBase64String(tokenBytes);
 
     user.ResetPasswordToken = emailToken;
-    user.ResetPasswordExpiry = DateTime.Now.AddMinutes(15);
+    user.ResetPasswordTokenExpiryTime = DateTime.Now.AddMinutes(15);
 
     var emailRequest = new EmailRequest
     {
-      ToEmail = new List<string> {email},
+      ToEmail = new List<string> { email },
       Subject = "Reset Password | QManga",
-      Body = EmailBody.EmailStringBody(email, emailToken)
+      Body = EmailPasswordResetBody.EmailStringBody(email, emailToken)
     };
 
     await emailService.SendEmailAsync(emailRequest);
-    await userRepository.UpdateAsync(user);
+    repositoryManager.Users.UpdateUser(user);
+    repositoryManager.Save();
 
     return Ok(new { Message = "Email sent" });
   }
@@ -159,19 +155,21 @@ public class UserController : ControllerBase
   public async Task<IActionResult> ResetPassword(ResetPasswordDto resetPasswordDto)
   {
     var newToken = resetPasswordDto.EmailToken.Replace(" ", "+");
-    var user = await userRepository.GetByEmailAsync(resetPasswordDto.Email);
-    
+    var user = await repositoryManager.Users.FirstOrDefaultUserAsync(
+      e => string.Equals(e.Email, resetPasswordDto.Email), true);
+
     if (user is null)
       return NotFound(new { Message = "User doesn't exist" });
 
     var tokenCode = user.ResetPasswordToken;
-    var emailTokenExpiry = user.ResetPasswordExpiry;
+    var emailTokenExpiry = user.ResetPasswordTokenExpiryTime;
 
     if (tokenCode != resetPasswordDto.EmailToken || emailTokenExpiry < DateTime.Now)
       return BadRequest(new { Message = "Invalid reset link" });
 
     user.Password = passwordHasher.Hash(resetPasswordDto.NewPassword);
-    await userRepository.UpdateAsync(user);
+    repositoryManager.Users.UpdateUser(user);
+    repositoryManager.Save();
 
     return Ok(new { Message = "Password reset successfully" });
   }
