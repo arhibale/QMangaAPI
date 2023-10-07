@@ -11,10 +11,14 @@ public class ImageService : IImageService
     this.hostEnvironment = hostEnvironment;
   }
 
-
-  public async Task<Image> SaveImageAsync(IFormFile imgFile, string bookName)
+  public async Task<List<Image>> SaveImagesAsync(List<IFormFile> imgFiles, string bookName)
   {
-    var path = Path.Combine(hostEnvironment.ContentRootPath, "Images", bookName);
+    throw new NotImplementedException();
+  }
+
+  public async Task<CoverImage> SaveImageAsync(IFormFile imgFile, string bookName)
+  {
+    var path = Path.Combine(hostEnvironment.ContentRootPath, "Resources/Images", bookName);
 
     if (!Directory.Exists(path)) 
       Directory.CreateDirectory(path);
@@ -24,9 +28,9 @@ public class ImageService : IImageService
 
     await SaveFile(imgPath, imgFile);
 
-    return new Image { Name = imgName, Path = imgPath };
+    return new CoverImage { Name = imgName, Path = imgPath };
   }
-
+  
   private static async Task SaveFile(string imgPath, IFormFile imgFile)
   {
     await using var fileStream = new FileStream(imgPath, FileMode.Create);

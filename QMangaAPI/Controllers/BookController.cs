@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using QMangaAPI.Data.Dto;
+using QMangaAPI.Models.Impl;
 using QMangaAPI.Repositories;
 using QMangaAPI.Services;
 
@@ -11,11 +14,13 @@ public class BookRepository : ControllerBase
 {
   private readonly IRepositoryManager repositoryManager;
   private readonly IImageService imageService;
+  private readonly IJwtService jwtService;
 
-  public BookRepository(IRepositoryManager repositoryManager, IImageService imageService)
+  public BookRepository(IRepositoryManager repositoryManager, IImageService imageService, IJwtService jwtService)
   {
     this.repositoryManager = repositoryManager;
     this.imageService = imageService;
+    this.jwtService = jwtService;
   }
 
   [HttpGet("page={page:int}&size={pageSize:int}")]
@@ -37,36 +42,27 @@ public class BookRepository : ControllerBase
       }).ToList()
     });
   }
+  
+  [HttpPost("upload/token={token}")]
+  [Authorize]
+  public async Task<IActionResult> Upload(string token, [FromBody] BookDto? bookDto)
+  {
+    if (string.IsNullOrEmpty(token))
+      return BadRequest("Invalid request");
 
-  // [HttpPost]
-  // public async Task<IActionResult> SaveBook([FromBody] BookDto? book)
-  // {
-  //   if (book is null)
-  //     return BadRequest(new { Message = "Book is null." });
-  //
-  //   var user = await userRepository.GetByUsernameAsync(book.UserName);
-  //   var bookType = await bookTypeRepository.GetByNameAsync(book.BookType);
-  //
-  //   var tags = await tagRepository.GetAllByNameAsync(book.Tags);
-  //   var authors = await authorRepository.GetAllByNameAsync(book.Authors);
-  //   var artist = await artistRepository.GetAllByNameAsync(book.Artists);
-  //   var translators = translatorRepository.GetAllByName(book.Translators);
-  //
-  //   var coverImage = await imageService.SaveCoverImageAsync(book.CoverImage, book.Name);
-  //
-  //   await bookRepository.AddAsync(new Book
-  //   {
-  //     Name = book.Name,
-  //     Description = book.Description,
-  //     BookType = bookType,
-  //     User = user,
-  //     CoverImage = coverImage,
-  //     Tags = { tags },
-  //     Authors = { authors },
-  //     Artists = { artist },
-  //     Translators = { translators }
-  //   });
-  //
-  //   return Ok(new { Message = "Successful added" });
-  // }
+    var principal = jwtService.GetPrincipleFromExpiredToken(token);
+    var username = principal.Identity?.Name;
+    var user = await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role, e => string.Equals(e.Username, username), true);
+
+    if (user is null || user.RefreshTokenExpiryTime <= DateTime.Now)
+      return BadRequest("Invalid request");
+    if (bookDto is null)
+      return BadRequest(new { Message = "Book is null" });
+    if (bookDto.CoverImage is null)
+      return BadRequest(new { Message = "Cover image is null" });
+
+    var coverImage = await imageService.SaveImageAsync(bookDto.CoverImage, bookDto.Name);
+
+    return Ok(new { Message = "Successful added" });
+  }
 }

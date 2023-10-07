@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using QMangaAPI.Data;
 using QMangaAPI.Data.Dto;
 using QMangaAPI.Data.Enum;
@@ -43,7 +45,7 @@ public class UserController : ControllerBase
 
     var byUsername =
       await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role,
-        e => string.Equals(e.Username, user.Username), false);
+        e => string.Equals(e.Username, user.Username), true);
 
     if (byUsername is null)
       return NotFound(new { Message = "User not found" });
@@ -83,7 +85,8 @@ public class UserController : ControllerBase
       return BadRequest(new { Message = message });
 
     user.Password = passwordHasher.Hash(user.Password);
-    user.Role = await repositoryManager.Roles.FirstOrDefaultRolesAsync(e => string.Equals(e.Name, RoleEnum.User.ToString()), true) ??
+    user.Role = await repositoryManager.Roles.FirstOrDefaultRolesAsync(
+                  e => string.Equals(e.Name, RoleEnum.User.ToString()), true) ??
                 throw new InvalidOperationException();
 
     repositoryManager.Users.CreateUser(user);
@@ -103,7 +106,7 @@ public class UserController : ControllerBase
 
     var principal = jwtService.GetPrincipleFromExpiredToken(accessToken);
     var username = principal.Identity?.Name;
-    var user = await repositoryManager.Users.FirstOrDefaultUserAsync(e => string.Equals(e.Username, username), true);
+    var user = await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role ,e => string.Equals(e.Username, username), true);
 
     if (user is null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
       return BadRequest("Invalid request");
@@ -172,5 +175,33 @@ public class UserController : ControllerBase
     repositoryManager.Save();
 
     return Ok(new { Message = "Password reset successfully" });
+  }
+
+  [HttpGet("profile/{token}")]
+  [Authorize]
+  public async Task<IActionResult> Profile(string token)
+  {
+    if (string.IsNullOrEmpty(token))
+      return BadRequest("Invalid request");
+
+    var principal = jwtService.GetPrincipleFromExpiredToken(token);
+    var username = principal.Identity?.Name;
+    var user = await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role, e => string.Equals(e.Username, username), true);
+
+    if (user is null || user.RefreshTokenExpiryTime <= DateTime.Now)
+      return BadRequest("Invalid request");
+
+    var bookPage = await repositoryManager.Books
+      .FindBooksByCondition(e => e.UploadedByUserId == user.Id, false)
+      .Select(e => new BookPageDto { Name = e.Name, BookType = e.BookType.Name, Tags = e.Tags.Select(tag => tag.Name) })
+      .ToListAsync();
+
+    return Ok(new UserProfileDto
+    {
+      Username = user.Username,
+      Email = user.Email,
+      Role = user.Role.Name,
+      BookUploads = bookPage
+    });
   }
 }
