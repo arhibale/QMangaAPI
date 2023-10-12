@@ -1,5 +1,6 @@
 using QMangaAPI.Models.Impl;
 using QMangaAPI.Repositories.Context;
+using Image = QMangaAPI.Models.Impl.Image;
 
 namespace QMangaAPI.Repositories.Impl;
 

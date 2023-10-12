@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using QMangaAPI.Models.Impl;
 using QMangaAPI.Models.Impl.To;
+using Image = QMangaAPI.Models.Impl.Image;
 
 namespace QMangaAPI.Repositories.Context;
 

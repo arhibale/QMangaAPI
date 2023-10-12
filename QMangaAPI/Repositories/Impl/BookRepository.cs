@@ -34,6 +34,7 @@ public class BookRepository : RepositoryBase<Book>, IBookRepository
       .AsNoTracking()
       .Include(e => e.BookType)
       .Include(e => e.Tags)
+      .Include(e => e.CoverImage)
       .Skip((page - 1 ?? 0) * pageSize)
       .Take(pageSize)
       .ToListAsync();
