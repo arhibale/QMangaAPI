@@ -10,9 +10,9 @@ public class ArtistRepository : RepositoryBase<Artist>, IArtistRepository
   {
   }
   
-  public IQueryable<Artist> GetAll(bool trackChanges) =>
-    FindAll(trackChanges);
+  public IQueryable<Artist> GetAll() =>
+    FindAll();
   
-  public async Task<Artist?> FirstOrDefaultUserAsync(Expression<Func<Artist, bool>> expression, bool trackChanges)
-    => await FirstOrDefaultAsync(expression, trackChanges);
+  public async Task<Artist?> FirstOrDefaultUserAsync(Expression<Func<Artist, bool>> expression)
+    => await FirstOrDefaultAsync(expression);
 }

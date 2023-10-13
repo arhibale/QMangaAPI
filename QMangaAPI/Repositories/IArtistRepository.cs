@@ -3,8 +3,21 @@ using QMangaAPI.Models.Impl;
 
 namespace QMangaAPI.Repositories;
 
+/// <summary>
+/// Репозиторий художников.
+/// </summary>
 public interface IArtistRepository
 {
-  IQueryable<Artist> GetAll(bool trackChanges);
-  Task<Artist?> FirstOrDefaultUserAsync(Expression<Func<Artist, bool>> expression, bool trackChanges);
+  /// <summary>
+  /// Получить список всех художников.
+  /// </summary>
+  /// <returns>Список художников</returns>
+  IQueryable<Artist> GetAll();
+  
+  /// <summary>
+  /// Получить художника.
+  /// </summary>
+  /// <param name="expression">Условие получения.</param>
+  /// <returns>Художник.</returns>
+  Task<Artist?> FirstOrDefaultUserAsync(Expression<Func<Artist, bool>> expression);
 }

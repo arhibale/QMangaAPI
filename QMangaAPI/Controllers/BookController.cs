@@ -30,7 +30,7 @@ public class BookRepository : ControllerBase
   public async Task<IActionResult> GetAllPage(int? page, int pageSize = 12)
   {
     var countDetails = await repositoryManager.Books.GetCountAsync();
-    var book = await repositoryManager.Books.GetPageAsync(page, pageSize);
+    var book = repositoryManager.Books.GetPageAsync(page, pageSize);
 
     return Ok(new PageResultDto<BookPageDto>
     {
@@ -41,7 +41,7 @@ public class BookRepository : ControllerBase
       {
         Name = e.Name,
         BookType = e.BookType.Name,
-        CoverImagePath = e.CoverImage?.Name ?? string.Empty,
+        CoverImagePath = e.CoverImage!.Name,
         Tags = e.Tags.Select(tag => tag.Name).ToList()
       }).ToList()
     });
@@ -58,7 +58,7 @@ public class BookRepository : ControllerBase
 
     var principal = jwtService.GetPrincipleFromExpiredToken(token);
     var username = principal.Identity?.Name;
-    var user = await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role, e => string.Equals(e.Username, username), true);
+    var user = await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role, e => string.Equals(e.Username, username));
 
     if (user is null || user.RefreshTokenExpiryTime <= DateTime.Now)
       return BadRequest("Invalid request");
@@ -69,7 +69,7 @@ public class BookRepository : ControllerBase
     if (!bookDto.Images.Any())
       return BadRequest(new { Message = $"Images is null: {bookDto.Images.Count}" });
 
-    var type = await repositoryManager.BookTypes.FirstOrDefaultUserAsync(e => string.Equals(e.Name, "Manga"), true);
+    var type = await repositoryManager.BookTypes.FirstOrDefaultBookTypeAsync(e => string.Equals(e.Name, "Manga"));
 
     if (type is null)
       return BadRequest(new { Message = "BookType is wrong" });
@@ -90,7 +90,7 @@ public class BookRepository : ControllerBase
     var authors = new List<Author>();
     foreach (var au in bookDto.Authors)
     {
-      var author = await repositoryManager.Authors.FirstOrDefaultUserAsync(e => string.Equals(e.Name, au), true);
+      var author = await repositoryManager.Authors.FirstOrDefaultUserAsync(e => string.Equals(e.Name, au));
       if (author is null)
         continue;
       
@@ -100,7 +100,7 @@ public class BookRepository : ControllerBase
     var artists = new List<Artist>();
     foreach (var ar in bookDto.Artists)
     {
-      var artist = await repositoryManager.Artists.FirstOrDefaultUserAsync(e => string.Equals(e.Name, ar), true);
+      var artist = await repositoryManager.Artists.FirstOrDefaultUserAsync(e => string.Equals(e.Name, ar));
       if (artist is null)
         continue;
       
@@ -110,7 +110,7 @@ public class BookRepository : ControllerBase
     var tags = new List<Tag>();
     foreach (var t in bookDto.Tags)
     {
-      var tag = await repositoryManager.Tags.FirstOrDefaultUserAsync(e => string.Equals(e.Name, t), true);
+      var tag = await repositoryManager.Tags.FirstOrDefaultUserAsync(e => string.Equals(e.Name, t));
       if (tag is null)
         continue;
       
@@ -130,7 +130,7 @@ public class BookRepository : ControllerBase
   [HttpGet("tags")]
   public async Task<IActionResult> Tags()
   {
-    var tags = await repositoryManager.Tags.GetAll(false).ToListAsync();
+    var tags = await repositoryManager.Tags.GetAll().ToListAsync();
 
     if (!tags.Any())
       return BadRequest(new {Message = "tags is null"});
@@ -141,7 +141,7 @@ public class BookRepository : ControllerBase
   [HttpGet("authors")]
   public async Task<IActionResult> Authors()
   {
-    var authors = await repositoryManager.Authors.GetAll(false).ToListAsync();
+    var authors = await repositoryManager.Authors.GetAll().ToListAsync();
 
     if (!authors.Any())
       return BadRequest(new {Message = "authors is null"});
@@ -152,7 +152,7 @@ public class BookRepository : ControllerBase
   [HttpGet("artists")]
   public async Task<IActionResult> Artists()
   {
-    var artists = await repositoryManager.Artists.GetAll(false).ToListAsync();
+    var artists = await repositoryManager.Artists.GetAll().ToListAsync();
 
     if (!artists.Any())
       return BadRequest(new {Message = "artists is null"});

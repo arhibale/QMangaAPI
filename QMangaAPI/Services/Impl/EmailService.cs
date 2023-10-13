@@ -44,12 +44,9 @@ public class EmailService : IEmailService
   private async Task Send(MimeMessage email)
   {
     using var smtp = new SmtpClient();
-
     await smtp.ConnectAsync(emailSettings.Host, emailSettings.Port, SecureSocketOptions.StartTls);
     await smtp.AuthenticateAsync(emailSettings.Email, emailSettings.Password);
-
     await smtp.SendAsync(email);
-
     await smtp.DisconnectAsync(true);
   }
 }

@@ -14,39 +14,21 @@ public class RepositoryBase<T> : IRepositoryBase<T> where T : class, IEntity
     this.context = context;
   }
 
-  public IQueryable<T> FindAll(bool trackChanges) =>
-    !trackChanges
-      ? context.Set<T>()
-        .AsNoTracking()
-      : context.Set<T>();
+  public IQueryable<T> FindAll() => context.Set<T>();
 
-
-  public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression, bool trackChanges) =>
-    !trackChanges
-      ? context.Set<T>()
-        .Where(expression)
-        .AsNoTracking()
-      : context.Set<T>()
+  public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression) => 
+    context.Set<T>()
         .Where(expression);
 
-  public Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> expression, bool trackChanges) =>
-    !trackChanges
-      ? context.Set<T>()
-        .AsNoTracking()
-        .FirstOrDefaultAsync(expression)
-      : context.Set<T>()
+  public Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> expression) =>
+    context.Set<T>()
         .FirstOrDefaultAsync(expression);
 
-  public Task<bool> AnyAsync(Expression<Func<T, bool>> expression, bool trackChanges) =>
-    !trackChanges
-      ? context.Set<T>()
-        .AsNoTracking()
-        .AnyAsync(expression)
-      : context.Set<T>()
+  public Task<bool> AnyAsync(Expression<Func<T, bool>> expression) =>
+    context.Set<T>()
         .AnyAsync(expression);
 
   public void Create(T entity) => context.Set<T>().Add(entity);
-  
 
   public void Update(T entity)
   {

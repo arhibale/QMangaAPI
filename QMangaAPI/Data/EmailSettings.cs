@@ -1,5 +1,8 @@
 namespace QMangaAPI.Data;
 
+/// <summary>
+/// Настройки подключения к сервисам отпраавки электронного письма.
+/// </summary>
 public class EmailSettings
 {
   public string Email { get; set; } = string.Empty;

@@ -20,25 +20,22 @@ public class BookRepository : RepositoryBase<Book>, IBookRepository
     Update(book);
   }
 
-  public IQueryable<Book> FindBooksByCondition(Expression<Func<Book, bool>> expression, bool trackChanges)
-    => FindByCondition(expression, trackChanges);
+  public IQueryable<Book> FindBooksByCondition(Expression<Func<Book, bool>> expression)
+    => FindByCondition(expression);
 
   public async Task<int> GetCountAsync()
     => await context.Books
-      .AsNoTracking()
       .CountAsync();
 
 
-  public async Task<List<Book>> GetPageAsync(int? page, int pageSize)
-    => await context.Books
-      .AsNoTracking()
+  public IQueryable<Book> GetPageAsync(int? page, int pageSize)
+    => context.Books
       .Include(e => e.BookType)
       .Include(e => e.Tags)
       .Include(e => e.CoverImage)
       .Skip((page - 1 ?? 0) * pageSize)
-      .Take(pageSize)
-      .ToListAsync();
+      .Take(pageSize);
 
-  public async Task<Book?> FirstOrDefaultBookAsync(Expression<Func<Book, bool>> expression, bool trackChanges)
-    => await FirstOrDefaultAsync(expression, trackChanges);
+  public async Task<Book?> FirstOrDefaultBookAsync(Expression<Func<Book, bool>> expression)
+    => await FirstOrDefaultAsync(expression);
 }

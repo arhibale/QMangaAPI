@@ -3,7 +3,15 @@ using QMangaAPI.Models.Impl;
 
 namespace QMangaAPI.Repositories;
 
+/// <summary>
+/// Репозиторий типа манги.
+/// </summary>
 public interface IBookTypeRepository
 {
-  Task<BookType?> FirstOrDefaultUserAsync(Expression<Func<BookType, bool>> expression, bool trackChanges);
+  /// <summary>
+  /// Получить тип манги.
+  /// </summary>
+  /// <param name="expression">Условие получения.</param>
+  /// <returns>Тип манги.</returns>
+  Task<BookType?> FirstOrDefaultBookTypeAsync(Expression<Func<BookType, bool>> expression);
 }

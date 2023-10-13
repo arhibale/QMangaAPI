@@ -10,9 +10,9 @@ public class TagRepository : RepositoryBase<Tag>, ITagRepository
   {
   }
 
-  public IQueryable<Tag> GetAll(bool trackChanges) =>
-    FindAll(trackChanges);
+  public IQueryable<Tag> GetAll() =>
+    FindAll();
   
-  public async Task<Tag?> FirstOrDefaultUserAsync(Expression<Func<Tag, bool>> expression, bool trackChanges)
-    => await FirstOrDefaultAsync(expression, trackChanges);
+  public async Task<Tag?> FirstOrDefaultUserAsync(Expression<Func<Tag, bool>> expression)
+    => await FirstOrDefaultAsync(expression);
 }

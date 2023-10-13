@@ -45,10 +45,8 @@ public class JwtService : IJwtService
       var tokenBytes = RandomNumberGenerator.GetBytes(64);
       var refreshToken = Convert.ToBase64String(tokenBytes);
 
-      if (await repositoryManager.Users.AnyUserAsync(e => e.RefreshToken == refreshToken, false))
-      {
+      if (await repositoryManager.Users.AnyUserAsync(e => e.RefreshToken == refreshToken))
         continue;
-      }
 
       return refreshToken;
     }

@@ -10,9 +10,9 @@ public class AuthorRepository : RepositoryBase<Author>, IAuthorRepository
   {
   }
   
-  public IQueryable<Author> GetAll(bool trackChanges) =>
-    FindAll(trackChanges);
+  public IQueryable<Author> GetAll() =>
+    FindAll();
   
-  public async Task<Author?> FirstOrDefaultUserAsync(Expression<Func<Author, bool>> expression, bool trackChanges)
-    => await FirstOrDefaultAsync(expression, trackChanges);
+  public async Task<Author?> FirstOrDefaultUserAsync(Expression<Func<Author, bool>> expression)
+    => await FirstOrDefaultAsync(expression);
 }

@@ -1,5 +1,8 @@
 namespace QMangaAPI.Repositories;
 
+/// <summary>
+/// Менеджер репозиторий.
+/// </summary>
 public interface IRepositoryManager
 {
   IUserRepository Users { get; }
@@ -11,5 +14,8 @@ public interface IRepositoryManager
   IAuthorRepository Authors { get; }
   IArtistRepository Artists { get; }
 
+  /// <summary>
+  /// Сохранить все изменения в БД.
+  /// </summary>
   void Save();
 }

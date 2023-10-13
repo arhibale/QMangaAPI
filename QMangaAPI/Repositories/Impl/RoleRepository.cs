@@ -10,6 +10,6 @@ public class RoleRepository : RepositoryBase<Role>, IRoleRepository
   {
   }
 
-  public async Task<Role?> FirstOrDefaultRolesAsync(Expression<Func<Role, bool>> expression, bool trackChanges)
-    => await FirstOrDefaultAsync(expression, trackChanges);
+  public async Task<Role?> FirstOrDefaultRolesAsync(Expression<Func<Role, bool>> expression)
+    => await FirstOrDefaultAsync(expression);
 }

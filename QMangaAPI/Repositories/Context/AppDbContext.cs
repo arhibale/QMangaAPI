@@ -5,6 +5,9 @@ using Image = QMangaAPI.Models.Impl.Image;
 
 namespace QMangaAPI.Repositories.Context;
 
+/// <summary>
+/// Контекст БД.
+/// </summary>
 public class AppDbContext : DbContext
 {
   public AppDbContext(DbContextOptions options) : base(options)
@@ -19,7 +22,7 @@ public class AppDbContext : DbContext
   public DbSet<Role> Roles { get; set; }
   public DbSet<Tag> Tags { get; set; }
   public DbSet<User> Users { get; set; }
-
+  
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     modelBuilder.Entity<Artist>()
@@ -34,7 +37,6 @@ public class AppDbContext : DbContext
       .HasMany(e => e.Books)
       .WithMany(e => e.Tags)
       .UsingEntity<TagBook>();
-
     modelBuilder.Entity<Book>()
       .HasOne(e => e.UploadedByUser)
       .WithMany(e => e.BookUploads)
@@ -50,13 +52,11 @@ public class AppDbContext : DbContext
       .WithMany(e => e.Users)
       .HasForeignKey(e => e.RoleId)
       .IsRequired();
-
     modelBuilder.Entity<Book>()
       .HasMany(e => e.Images)
       .WithOne(e => e.Book)
       .HasForeignKey(e => e.BookId)
       .IsRequired();
-
     modelBuilder.Entity<Book>()
       .HasOne(e => e.CoverImage)
       .WithOne(e => e.Book)

@@ -43,9 +43,8 @@ public class UserController : ControllerBase
     if (user is null)
       return BadRequest(new { Message = "User is null" });
 
-    var byUsername =
-      await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role,
-        e => string.Equals(e.Username, user.Username), true);
+    var byUsername = await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role,
+      e => string.Equals(e.Username, user.Username));
 
     if (byUsername is null)
       return NotFound(new { Message = "User not found" });
@@ -85,8 +84,8 @@ public class UserController : ControllerBase
       return BadRequest(new { Message = message });
 
     user.Password = passwordHasher.Hash(user.Password);
-    user.Role = await repositoryManager.Roles.FirstOrDefaultRolesAsync(
-                  e => string.Equals(e.Name, RoleEnum.User.ToString()), true) ??
+    user.Role = await repositoryManager.Roles.FirstOrDefaultRolesAsync(e =>
+                  string.Equals(e.Name, RoleEnum.User.ToString())) ??
                 throw new InvalidOperationException();
 
     repositoryManager.Users.CreateUser(user);
@@ -106,7 +105,8 @@ public class UserController : ControllerBase
 
     var principal = jwtService.GetPrincipleFromExpiredToken(accessToken);
     var username = principal.Identity?.Name;
-    var user = await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role ,e => string.Equals(e.Username, username), true);
+    var user = await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role,
+      e => string.Equals(e.Username, username));
 
     if (user is null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
       return BadRequest("Invalid request");
@@ -129,7 +129,7 @@ public class UserController : ControllerBase
   [HttpPost("send-email-reset-password/{email}")]
   public async Task<IActionResult> SendEmail(string email)
   {
-    var user = await repositoryManager.Users.FirstOrDefaultUserAsync(e => string.Equals(e.Email, email), true);
+    var user = await repositoryManager.Users.FirstOrDefaultUserAsync(e => string.Equals(e.Email, email));
 
     if (user is null)
       return NotFound(new { Message = "Email doesn't exist" });
@@ -157,9 +157,8 @@ public class UserController : ControllerBase
   [HttpPost("reset-password")]
   public async Task<IActionResult> ResetPassword(ResetPasswordDto resetPasswordDto)
   {
-    var newToken = resetPasswordDto.EmailToken.Replace(" ", "+");
     var user = await repositoryManager.Users.FirstOrDefaultUserAsync(
-      e => string.Equals(e.Email, resetPasswordDto.Email), true);
+      e => string.Equals(e.Email, resetPasswordDto.Email));
 
     if (user is null)
       return NotFound(new { Message = "User doesn't exist" });
@@ -186,13 +185,14 @@ public class UserController : ControllerBase
 
     var principal = jwtService.GetPrincipleFromExpiredToken(token);
     var username = principal.Identity?.Name;
-    var user = await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role, e => string.Equals(e.Username, username), true);
+    var user = await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role,
+      e => string.Equals(e.Username, username));
 
     if (user is null || user.RefreshTokenExpiryTime <= DateTime.Now)
       return BadRequest("Invalid request");
 
     var bookPage = await repositoryManager.Books
-      .FindBooksByCondition(e => e.UploadedByUserId == user.Id, false)
+      .FindBooksByCondition(e => e.UploadedByUserId == user.Id)
       .Select(e => new BookPageDto { Name = e.Name, BookType = e.BookType.Name, Tags = e.Tags.Select(tag => tag.Name) })
       .ToListAsync();
 

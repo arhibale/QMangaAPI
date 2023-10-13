@@ -1,5 +1,8 @@
 namespace QMangaAPI.Data;
 
+/// <summary>
+/// Тело html документа для сброса пароля.
+/// </summary>
 public static class EmailPasswordResetBody
 {
   public static string EmailStringBody(string email, string emailToken)

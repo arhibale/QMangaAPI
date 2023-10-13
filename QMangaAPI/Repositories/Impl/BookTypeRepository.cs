@@ -10,6 +10,6 @@ public class BookTypeRepository : RepositoryBase<BookType>, IBookTypeRepository
   {
   }
   
-  public async Task<BookType?> FirstOrDefaultUserAsync(Expression<Func<BookType, bool>> expression, bool trackChanges)
-    => await FirstOrDefaultAsync(expression, trackChanges);
+  public async Task<BookType?> FirstOrDefaultBookTypeAsync(Expression<Func<BookType, bool>> expression)
+    => await FirstOrDefaultAsync(expression);
 }
