@@ -47,4 +47,11 @@ public interface IBookRepository
   /// <param name="expression">Условие получения.</param>
   /// <returns>Список манги.</returns>
   IQueryable<Book> FindBooksByCondition(Expression<Func<Book, bool>> expression);
+
+  /// <summary>
+  /// Получить мангу со всеми зависимостями.
+  /// </summary>
+  /// <param name="expression">Условие.</param>
+  /// <returns>Манга.</returns>
+  Task<Book?> FirstOrDefaultIncludeAllBookAsync(Expression<Func<Book, bool>> expression);
 }

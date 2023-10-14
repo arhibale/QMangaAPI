@@ -38,4 +38,13 @@ public class BookRepository : RepositoryBase<Book>, IBookRepository
 
   public async Task<Book?> FirstOrDefaultBookAsync(Expression<Func<Book, bool>> expression)
     => await FirstOrDefaultAsync(expression);
+
+  public async Task<Book?> FirstOrDefaultIncludeAllBookAsync(Expression<Func<Book, bool>> expression)
+    => await context.Books
+      .Include(e => e.BookType)
+      .Include(e => e.Tags)
+      .Include(e => e.CoverImage)
+      .Include(e => e.Authors)
+      .Include(e => e.Artists)
+      .FirstOrDefaultAsync(expression);
 }

@@ -13,9 +13,9 @@ public class Book : IEntity
   public Guid UploadedByUserId { get; set; }
   public User? UploadedByUser { get; set; }
 
-  public IEnumerable<Author> Authors { get; } = new List<Author>();
-  public IEnumerable<Artist> Artists { get; } = new List<Artist>();
-  public IEnumerable<Tag> Tags { get; } = new List<Tag>();
+  public List<Author> Authors { get; } = new List<Author>();
+  public List<Artist> Artists { get; } = new List<Artist>();
+  public List<Tag> Tags { get; } = new List<Tag>();
 
   public CoverImage? CoverImage { get; set; }
   public IEnumerable<Image> Images { get; set; } = new List<Image>();

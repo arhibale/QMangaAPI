@@ -193,7 +193,7 @@ public class UserController : ControllerBase
 
     var bookPage = await repositoryManager.Books
       .FindBooksByCondition(e => e.UploadedByUserId == user.Id)
-      .Select(e => new BookPageDto { Name = e.Name, BookType = e.BookType.Name, Tags = e.Tags.Select(tag => tag.Name) })
+      .Select(e => new BookPageDto { Name = e.Name, BookType = e.BookType.Name })
       .ToListAsync();
 
     return Ok(new UserProfileDto

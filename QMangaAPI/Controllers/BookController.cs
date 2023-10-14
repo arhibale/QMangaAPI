@@ -73,18 +73,13 @@ public class BookRepository : ControllerBase
 
     if (type is null)
       return BadRequest(new { Message = "BookType is wrong" });
-    
-    var images = await imageService.SaveImagesAsync(bookDto.Images, bookDto.Name);
-    var coverImage = await imageService.SaveImageAsync(bookDto.CoverImage, bookDto.Name);
 
     var book = new Book
     {
       Name = bookDto.Name,
       Description = bookDto.Description,
       BookType = type,
-      UploadedByUser = user,
-      CoverImage = coverImage,
-      Images = images
+      UploadedByUser = user
     };
 
     var authors = new List<Author>();
@@ -92,7 +87,7 @@ public class BookRepository : ControllerBase
     {
       var author = await repositoryManager.Authors.FirstOrDefaultUserAsync(e => string.Equals(e.Name, au));
       if (author is null)
-        continue;
+        return BadRequest(new {Message = "Wrong author"});
       
       authors.Add(author);
     }
@@ -102,7 +97,7 @@ public class BookRepository : ControllerBase
     {
       var artist = await repositoryManager.Artists.FirstOrDefaultUserAsync(e => string.Equals(e.Name, ar));
       if (artist is null)
-        continue;
+        return BadRequest(new {Message = "Wrong artist"});
       
       artists.Add(artist);
     }
@@ -112,14 +107,20 @@ public class BookRepository : ControllerBase
     {
       var tag = await repositoryManager.Tags.FirstOrDefaultUserAsync(e => string.Equals(e.Name, t));
       if (tag is null)
-        continue;
+        return BadRequest(new {Message = "Wrong tag"});
       
       tags.Add(tag);
     }
 
-    book.Authors.ToList().AddRange(authors);
-    book.Artists.ToList().AddRange(artists);
-    book.Tags.ToList().AddRange(tags);
+    book.Authors.AddRange(authors);
+    book.Artists.AddRange(artists);
+    book.Tags.AddRange(tags);
+    
+    var images = await imageService.SaveImagesAsync(bookDto.Images, bookDto.Name.Replace(' ', '_'));
+    var coverImage = await imageService.SaveImageAsync(bookDto.CoverImage, bookDto.Name.Replace(' ', '_'));
+
+    book.CoverImage = coverImage;
+    book.Images = images;
     
     repositoryManager.Books.CreateBook(book);
     repositoryManager.Save();
@@ -158,5 +159,26 @@ public class BookRepository : ControllerBase
       return BadRequest(new {Message = "artists is null"});
 
     return Ok(new List<string>(artists.Select(e => e.Name)));
+  }
+
+  [HttpGet("name={name}")]
+  public async Task<IActionResult> GetBook(string name)
+  {
+    var book = await repositoryManager.Books.FirstOrDefaultIncludeAllBookAsync(e => string.Equals(e.Name, name));
+
+    if (book is null)
+      return BadRequest(new { Message = "Wrong book name" });
+    
+
+    return Ok(new BookDto
+    {
+      Name = book.Name,
+      Description = book.Description,
+      BookType = book.BookType.Name,
+      Tags = book.Tags.Select(e => e.Name).ToList(),
+      Authors = book.Authors.Select(e => e.Name).ToList(),
+      Artists = book.Artists.Select(e => e.Name).ToList(),
+      CoverImagePath = book.CoverImage?.Name ?? string.Empty
+    });
   }
 }
