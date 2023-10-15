@@ -27,43 +27,44 @@ public static class SeedData
 
     await context.Users.AddRangeAsync(new List<User>
       {
-        new() { Username = "user1", Email = "arhibale@yandex.ru", Password = ph.Hash("Lololohka1<>"), Role = user },
-        new() { Username = "user2", Email = "arhibale@yandex.ru", Password = ph.Hash("Lololohka1<>"), Role = admin },
-        new() { Username = "user3", Email = "arhibale@yandex.ru", Password = ph.Hash("Lololohka1<>"), Role = creator }
+        new() { Username = "Kalen", Email = "arhibale@yandex.ru", Password = ph.Hash("Lololohka1<>"), Role = user },
+        new() { Username = "Kekya", Email = "arhibale2@gmail.com", Password = ph.Hash("Lololohka1<>"), Role = admin },
+        new() { Username = "ArhiBale", Email = "arhibale@yandex.ru", Password = ph.Hash("Lololohka1<>"), Role = creator }
       }
     );
 
     await context.Tags.AddRangeAsync(new List<Tag>
       {
-        new() { Name = "Tag1" },
-        new() { Name = "Tag2" },
-        new() { Name = "Tag3" },
-        new() { Name = "Tag4" },
-        new() { Name = "Tag5" },
-        new() { Name = "Tag6" },
-        new() { Name = "Tag7" },
-        new() { Name = "Tag8" },
-        new() { Name = "Tag9" },
-        new() { Name = "Tag10" },
-        new() { Name = "Tag11" },
-        new() { Name = "Tag12" },
-        new() { Name = "Tag13" },
-        new() { Name = "Tag14" },
-        new() { Name = "Tag15" },
-        new() { Name = "Tag16" },
-        new() { Name = "Tag17" },
-        new() { Name = "Tag18" },
-        new() { Name = "Tag19" },
-        new() { Name = "Tag20" },
-        new() { Name = "Tag21" },
-        new() { Name = "Tag22" },
-        new() { Name = "Tag23" },
-        new() { Name = "Tag24" },
-        new() { Name = "Tag25" },
-        new() { Name = "Tag26" },
-        new() { Name = "Tag27" },
-        new() { Name = "Tag28" },
-        new() { Name = "Tag29" }
+        new() { Name = "Art" },
+        new() { Name = "Action" },
+        new() { Name = "Movie" },
+        new() { Name = "Martial arts" },
+        new() { Name = "Vampires" },
+        new() { Name = "Harem" },
+        new() { Name = "Gender intrigue" },
+        new() { Name = "Heroic fantasy" },
+        new() { Name = "Detective" },
+        new() { Name = "Josei" },
+        new() { Name = "Drama" },
+        new() { Name = "Game" },
+        new() { Name = "Isekai" },
+        new() { Name = "History" },
+        new() { Name = "Cyberpunk" },
+        new() { Name = "Codomoko" },
+        new() { Name = "Mediyamaho-shojo" },
+        new() { Name = "Meha" },
+        new() { Name = "Mysticism" },
+        new() { Name = "Science fiction" },
+        new() { Name = "Omegavers" },
+        new() { Name = "Everyday life" },
+        new() { Name = "Post apocalyptic" },
+        new() { Name = "Adventures" },
+        new() { Name = "Psychology" },
+        new() { Name = "Romance" },
+        new() { Name = "Supernatural" },
+        new() { Name = "Fantastic" },
+        new() { Name = "Fantasy" },
+        new() { Name = "School" }
       }
     );
 

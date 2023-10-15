@@ -15,7 +15,7 @@ public class BookRepository : ControllerBase
   private readonly IRepositoryManager repositoryManager;
   private readonly IImageService imageService;
   private readonly IJwtService jwtService;
-  
+
   // 10 гб.
   private const long MaxFileSize = 10L * 1024L * 1024L * 1024L;
 
@@ -46,7 +46,7 @@ public class BookRepository : ControllerBase
       }).ToList()
     });
   }
-  
+
   [HttpPost("upload/token={token}")]
   [RequestSizeLimit(MaxFileSize)]
   [RequestFormLimits(MultipartBodyLengthLimit = MaxFileSize)]
@@ -58,7 +58,8 @@ public class BookRepository : ControllerBase
 
     var principal = jwtService.GetPrincipleFromExpiredToken(token);
     var username = principal.Identity?.Name;
-    var user = await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role, e => string.Equals(e.Username, username));
+    var user = await repositoryManager.Users.FirstOrDefaultUserIncludeModelAsync(e => e.Role,
+      e => string.Equals(e.Username, username));
 
     if (user is null || user.RefreshTokenExpiryTime <= DateTime.Now)
       return BadRequest("Invalid request");
@@ -87,41 +88,41 @@ public class BookRepository : ControllerBase
     {
       var author = await repositoryManager.Authors.FirstOrDefaultUserAsync(e => string.Equals(e.Name, au));
       if (author is null)
-        return BadRequest(new {Message = "Wrong author"});
-      
+        return BadRequest(new { Message = "Wrong author" });
+
       authors.Add(author);
     }
-    
+
     var artists = new List<Artist>();
     foreach (var ar in bookDto.Artists)
     {
       var artist = await repositoryManager.Artists.FirstOrDefaultUserAsync(e => string.Equals(e.Name, ar));
       if (artist is null)
-        return BadRequest(new {Message = "Wrong artist"});
-      
+        return BadRequest(new { Message = "Wrong artist" });
+
       artists.Add(artist);
     }
-    
+
     var tags = new List<Tag>();
     foreach (var t in bookDto.Tags)
     {
       var tag = await repositoryManager.Tags.FirstOrDefaultUserAsync(e => string.Equals(e.Name, t));
       if (tag is null)
-        return BadRequest(new {Message = "Wrong tag"});
-      
+        return BadRequest(new { Message = "Wrong tag" });
+
       tags.Add(tag);
     }
 
     book.Authors.AddRange(authors);
     book.Artists.AddRange(artists);
     book.Tags.AddRange(tags);
-    
+
     var images = await imageService.SaveImagesAsync(bookDto.Images, bookDto.Name.Replace(' ', '_'));
     var coverImage = await imageService.SaveImageAsync(bookDto.CoverImage, bookDto.Name.Replace(' ', '_'));
 
     book.CoverImage = coverImage;
     book.Images = images;
-    
+
     repositoryManager.Books.CreateBook(book);
     repositoryManager.Save();
 
@@ -134,29 +135,29 @@ public class BookRepository : ControllerBase
     var tags = await repositoryManager.Tags.GetAll().ToListAsync();
 
     if (!tags.Any())
-      return BadRequest(new {Message = "tags is null"});
+      return BadRequest(new { Message = "tags is null" });
 
     return Ok(new List<string>(tags.Select(e => e.Name)));
   }
-  
+
   [HttpGet("authors")]
   public async Task<IActionResult> Authors()
   {
     var authors = await repositoryManager.Authors.GetAll().ToListAsync();
 
     if (!authors.Any())
-      return BadRequest(new {Message = "authors is null"});
+      return BadRequest(new { Message = "authors is null" });
 
     return Ok(new List<string>(authors.Select(e => e.Name)));
   }
-  
+
   [HttpGet("artists")]
   public async Task<IActionResult> Artists()
   {
     var artists = await repositoryManager.Artists.GetAll().ToListAsync();
 
     if (!artists.Any())
-      return BadRequest(new {Message = "artists is null"});
+      return BadRequest(new { Message = "artists is null" });
 
     return Ok(new List<string>(artists.Select(e => e.Name)));
   }
@@ -167,8 +168,7 @@ public class BookRepository : ControllerBase
     var book = await repositoryManager.Books.FirstOrDefaultIncludeAllBookAsync(e => string.Equals(e.Name, name));
 
     if (book is null)
-      return BadRequest(new { Message = "Wrong book name" });
-    
+      return BadRequest(new { Message = "Book is null" });
 
     return Ok(new BookDto
     {
@@ -180,5 +180,38 @@ public class BookRepository : ControllerBase
       Artists = book.Artists.Select(e => e.Name).ToList(),
       CoverImagePath = book.CoverImage?.Name ?? string.Empty
     });
+  }
+
+  [HttpGet("reader/name={name}")]
+  public IActionResult GetImages(string name)
+  {
+    var images = repositoryManager.Images.FindByCondition(e => string.Equals(e.Book.Name, name));
+
+    if (!images.Any())
+      return BadRequest(new { Message = "Book is null" });
+
+    var list = new List<string>(images.Select(e => e.Name));
+    list.Sort(new ImageListComparer());
+
+    return Ok(list);
+  }
+}
+
+internal class ImageListComparer : IComparer<string>
+{
+  public int Compare(string? x, string? y)
+  {
+    if (string.IsNullOrEmpty(x) || string.IsNullOrEmpty(y))
+    {
+      throw new ArgumentException("wrong parameters");
+    }
+
+    var x1 = x.Split('_');
+    var numX = Convert.ToInt32(x1[^1].Split('.')[0]);
+    
+    var y1 = y.Split('_');
+    var numY = Convert.ToInt32(y1[^1].Split('.')[0]);
+
+    return numX - numY;
   }
 }
