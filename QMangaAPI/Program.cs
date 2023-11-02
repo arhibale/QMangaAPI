@@ -1,8 +1,10 @@
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Security;
 using QMangaAPI.Data;
 using QMangaAPI.Repositories;
 using QMangaAPI.Repositories.Context;
@@ -32,7 +34,7 @@ builder.Services.AddCors(options =>
   options.AddPolicy("QMangaPolicy", policy =>
   {
     policy
-      .AllowAnyOrigin()
+      .WithOrigins("http://localhost:4200")
       .AllowAnyMethod()
       .AllowAnyHeader();
   });
@@ -61,7 +63,7 @@ builder.Services.AddAuthentication(e =>
   e.TokenValidationParameters = new TokenValidationParameters
   {
     ValidateIssuerSigningKey = true,
-    IssuerSigningKey = new SymmetricSecurityKey("qmangaveryverysecret"u8.ToArray()),
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["SecretKey"] ?? throw new InvalidParameterException())),
     ValidateAudience = false,
     ValidateIssuer = false,
     ClockSkew = TimeSpan.Zero

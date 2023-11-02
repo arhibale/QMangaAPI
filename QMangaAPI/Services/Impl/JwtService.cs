@@ -1,7 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Security;
 using QMangaAPI.Repositories;
 
 namespace QMangaAPI.Services.Impl;
@@ -9,16 +11,18 @@ namespace QMangaAPI.Services.Impl;
 public class JwtService : IJwtService
 {
   private readonly IRepositoryManager repositoryManager;
+  private readonly IConfiguration configuration;
 
-  public JwtService(IRepositoryManager repositoryManager)
+  public JwtService(IRepositoryManager repositoryManager, IConfiguration configuration)
   {
     this.repositoryManager = repositoryManager;
+    this.configuration = configuration;
   }
 
   public string CreateJwt(string username, string role)
   {
     var jwtTokenHandler = new JwtSecurityTokenHandler();
-    var key = "qmangaveryverysecret"u8.ToArray();
+    var key = Encoding.UTF8.GetBytes(configuration["SecretKey"] ?? throw new InvalidParameterException());
     var identity = new ClaimsIdentity(new Claim[]
     {
       new(ClaimTypes.Role, role),
@@ -54,7 +58,7 @@ public class JwtService : IJwtService
 
   public ClaimsPrincipal GetPrincipleFromExpiredToken(string token)
   {
-    var key = "qmangaveryverysecret"u8.ToArray();
+    var key = Encoding.UTF8.GetBytes(configuration["SecretKey"] ?? throw new InvalidParameterException());
     var tokenValidationParameters = new TokenValidationParameters
     {
       ValidateAudience = false,
